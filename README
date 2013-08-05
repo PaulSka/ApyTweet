@@ -1,0 +1,6 @@
+ApyTweet POC
+Receive and send msg by Tweepy (Python library for Twitter)
+
+You need :
+* Python
+* Tweepy library (pip install tweepy)
