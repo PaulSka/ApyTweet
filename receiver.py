@@ -5,11 +5,11 @@
 #---------- Import
 import tweepy
 import sqlite3
-import time
+import datetime
 import conf
 
 #Use SQLite for history
-conn = sqlite3.connect("db.sqlite")
+conn = sqlite3.connect("db.sqlite" ,detect_types=sqlite3.PARSE_DECLTYPES)
 cursor = conn.cursor()
 cursor.execute("create table if not exists apero (date date, lieu text, lieu_url text, description text, oui integer, non integer, ouinon integer, actif bool)")
 
@@ -21,16 +21,18 @@ bot = tweepy.API(auth)
 #Checking private message
 for msg in bot.direct_messages():
     #msg = {"date" : "12/11/2013 14:00", "lieu" : "At home", "description" : "Party at home !", "lieu_url" : "http://t.co/GiBmA6jZCR"}
+    
     try:
         data = eval(msg.text)
         #Get infos
-        date_apero = time.strptime(data["date"], "%d/%m/%Y %H:%M")
+        date_apero =  datetime.datetime.strptime(data["date"], "%d/%m/%Y %H:%M")
         lieu_apero = data["lieu"]
         description_apero = data["description"]
         lieu_url = data["lieu_url"]
         actif_apero = True
         #Insert into datatable
-        cursor.execute("insert into apero (date, lieu, lieu_url, description, actif) values (%s, '%s', '%s', '%s', %s)" %(date_apero, lieu_apero, lieu_url, description_apero, actif_apero))
+        cursor.execute("insert into apero (date, lieu, lieu_url, description, actif) values (?, ?, ?, ?, ?)", (date_apero, lieu_apero, lieu_url, description_apero, actif_apero))
+        conn.commit()
         
         #Retweet for user
         bot.send_direct_message(user_id = msg.sender_id, text = "OK")
@@ -43,3 +45,5 @@ for msg in bot.direct_messages():
         
     #Destroy msg
     msg.destroy()
+    
+cursor.close()
